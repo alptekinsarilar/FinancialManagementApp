@@ -14,10 +14,23 @@ namespace FinancialManagementApp.Data
         }
 
         public DbSet<User> Users { set; get; }
+        public DbSet<Transaction> Transactions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<User>(entity => { entity.HasIndex(e => e.Email).IsUnique(); });
+            base.OnModelCreating(modelBuilder);
+
+            // Ensure the Email column in the Users table is unique
+            modelBuilder.Entity<User>(entity =>
+            {
+                entity.HasIndex(e => e.Email).IsUnique();
+            });
+
+            // Configure the precision and scale for the Amount column in the Transactions table
+            modelBuilder.Entity<Transaction>(entity =>
+            {
+                entity.Property(e => e.Amount).HasColumnType("decimal(18,2)");
+            });
         }
     }
 }

@@ -32,6 +32,7 @@ builder.Services.AddDbContext<ApplicationDBContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Register services
+builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddSingleton<JwtService>();
 
