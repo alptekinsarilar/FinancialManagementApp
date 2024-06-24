@@ -12,6 +12,6 @@ namespace FinancialManagementApp.Interfaces
         Transaction GetById(int id);
         IEnumerable<Transaction> GetByUserId(int userId);
         void Update(Transaction transaction);
-        void Delete(int id);
+        Transaction? Delete(int id);
     }
 }

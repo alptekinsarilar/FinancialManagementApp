@@ -40,7 +40,7 @@ namespace FinancialManagementApp.Repository
             _context.SaveChanges();
         }
 
-        public void Delete(int id)
+        public Transaction? Delete(int id)
         {
             var transaction = _context.Transactions.Find(id);
             if (transaction != null)
@@ -48,6 +48,7 @@ namespace FinancialManagementApp.Repository
                 _context.Transactions.Remove(transaction);
                 _context.SaveChanges();
             }
+            return transaction;
         }
     }
 }

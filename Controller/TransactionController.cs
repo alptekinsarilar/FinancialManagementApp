@@ -14,10 +14,12 @@ namespace FinancialManagementApp.Controller
     public class TransactionController : ControllerBase
     {
         private readonly ITransactionRepository _transactionRepository;
+        private readonly IUserRepository _userRepository;
 
-        public TransactionController(ITransactionRepository transactionRepository)
+        public TransactionController(ITransactionRepository transactionRepository, IUserRepository userRepository)
         {
             _transactionRepository = transactionRepository;
+            _userRepository = userRepository;
         }
 
         [HttpPost]
@@ -28,13 +30,19 @@ namespace FinancialManagementApp.Controller
                 return BadRequest(ModelState);
             }
 
+            var user = _userRepository.GetById(dto.UserId);
+            if (user == null)
+            {
+                return BadRequest(new { message = "User not found" });
+            }
+
             var transaction = new Transaction
             {
                 UserId = dto.UserId,
                 Amount = dto.Amount,
                 Description = dto.Description,
                 Category = dto.Category,
-                TransactionDate = dto.TransactionDate
+                TransactionDate = DateTime.Now
             };
 
             _transactionRepository.Create(transaction);
@@ -72,7 +80,6 @@ namespace FinancialManagementApp.Controller
             transaction.Amount = dto.Amount;
             transaction.Description = dto.Description;
             transaction.Category = dto.Category;
-            transaction.TransactionDate = dto.TransactionDate;
 
             _transactionRepository.Update(transaction);
             return NoContent();
@@ -81,7 +88,16 @@ namespace FinancialManagementApp.Controller
         [HttpDelete("{id}")]
         public IActionResult DeleteTransaction(int id)
         {
-            _transactionRepository.Delete(id);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var stockModel = _transactionRepository.Delete(id);
+
+            if (stockModel == null)
+            {
+                return NotFound();
+            }
+
             return NoContent();
         }
     }
