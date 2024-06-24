@@ -10,6 +10,5 @@ namespace FinancialManagementApp.Dto.Transaction
         public decimal Amount { get; set; }
         public string? Description { get; set; }
         public string Category { get; set; } = String.Empty;
-        public DateTime TransactionDate { get; set; }
     }
 }
