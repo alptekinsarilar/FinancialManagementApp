@@ -9,13 +9,14 @@ namespace FinancialManagementApp.Model
     public class Transfer
     {
         public int Id { get; set; }
-        public string SenderId { get; set; }
-        public string RecipientId { get; set; }
+        public int SenderAccountId { get; set; }
+        public int RecipientAccountId { get; set; }
         [Column(TypeName = "decimal(18,2)")]
         public decimal Amount { get; set; }
         public DateTime TransferDate { get; set; } = DateTime.Now;
 
-        public AppUser Sender { get; set; }
-        public AppUser Recipient { get; set; }
+        public Account SenderAccount { get; set; }
+        public Account RecipientAccount { get; set; }
     }
+
 }

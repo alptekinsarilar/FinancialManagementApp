@@ -31,20 +31,20 @@ namespace FinancialManagementApp.Data
 
 
             modelBuilder.Entity<Transfer>(entity =>
-            {
-                entity.Property(e => e.Amount).HasColumnType("decimal(18,2)");
-                entity.HasOne(t => t.Sender)
-                      .WithMany()
-                      .HasForeignKey(t => t.SenderId)
-                      .IsRequired()
-                      .OnDelete(DeleteBehavior.Restrict);
+                {
+                    entity.Property(e => e.Amount).HasColumnType("decimal(18,2)");
+                    entity.HasOne(t => t.SenderAccount)
+                        .WithMany()
+                        .HasForeignKey(t => t.SenderAccountId)
+                        .IsRequired()
+                        .OnDelete(DeleteBehavior.Restrict);
 
-                entity.HasOne(t => t.Recipient)
-                      .WithMany()
-                      .HasForeignKey(t => t.RecipientId)
-                      .IsRequired()
-                      .OnDelete(DeleteBehavior.Restrict);
-            });
+                    entity.HasOne(t => t.RecipientAccount)
+                        .WithMany()
+                        .HasForeignKey(t => t.RecipientAccountId)
+                        .IsRequired()
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
 
             modelBuilder.Entity<Account>(entity =>
             {
