@@ -188,6 +188,19 @@ namespace FinancialManagementApp.Service
                     _context.Transactions.Add(senderTransaction);
                     _context.Transactions.Add(recipientTransaction);
 
+                    var transfer = new Transfer
+                    {
+                        SenderAccountId = senderAccount.Id,
+                        RecipientAccountId = recipientAccount.Id,
+                        Amount = dto.Amount,
+                        TransferDate = DateTime.Now,
+                        SenderAccount = senderAccount,
+                        RecipientAccount = recipientAccount
+                    };
+
+                    _context.Transfers.Add(transfer);
+
+
                     await _context.SaveChangesAsync();
                     await dbContextTransaction.CommitAsync();
 
