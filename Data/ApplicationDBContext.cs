@@ -3,34 +3,80 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using FinancialManagementApp.Model;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace FinancialManagementApp.Data
 {
-     public class ApplicationDBContext : DbContext
+    public class ApplicationDBContext : IdentityDbContext<AppUser>
     {
         public ApplicationDBContext(DbContextOptions<ApplicationDBContext> options) : base(options)
         {
         }
 
-        public DbSet<User> Users { set; get; }
         public DbSet<Transaction> Transactions { get; set; }
+        public DbSet<Transfer> Transfers { get; set; }
+        public DbSet<Account> Accounts { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // Ensure the Email column in the Users table is unique
-            modelBuilder.Entity<User>(entity =>
-            {
-                entity.HasIndex(e => e.Email).IsUnique();
-            });
-
-            // Configure the precision and scale for the Amount column in the Transactions table
+            // Configure the Transaction entity
             modelBuilder.Entity<Transaction>(entity =>
             {
                 entity.Property(e => e.Amount).HasColumnType("decimal(18,2)");
             });
+
+
+            modelBuilder.Entity<Transfer>(entity =>
+            {
+                entity.Property(e => e.Amount).HasColumnType("decimal(18,2)");
+                entity.HasOne(t => t.Sender)
+                      .WithMany()
+                      .HasForeignKey(t => t.SenderId)
+                      .IsRequired()
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(t => t.Recipient)
+                      .WithMany()
+                      .HasForeignKey(t => t.RecipientId)
+                      .IsRequired()
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Account>(entity =>
+            {
+                entity.Property(e => e.Balance).HasColumnType("decimal(18,2)");
+                entity.Property(e => e.Currency)
+                      .HasConversion(
+                          v => v.ToString(),
+                          v => (Currency)Enum.Parse(typeof(Currency), v)
+                      );
+                entity.HasOne(a => a.AppUser)
+                      .WithMany(u => u.Accounts)
+                      .HasForeignKey(a => a.UserId)
+                      .IsRequired()
+                      .OnDelete(DeleteBehavior.Cascade);
+                      
+                entity.HasIndex(a => a.AccountName).IsUnique();
+            });
+
+            List<IdentityRole> roles = new List<IdentityRole>
+            {
+                new IdentityRole
+                {
+                    Name = "Admin",
+                    NormalizedName = "ADMIN"
+                },
+                new IdentityRole
+                {
+                    Name = "User",
+                    NormalizedName = "USER"
+                },
+            };
+            modelBuilder.Entity<IdentityRole>().HasData(roles);
         }
     }
 }

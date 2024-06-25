@@ -1,23 +1,21 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
+using FinancialManagementApp.Dto.Account;
 
-namespace FinancialManagementApp.Model
+namespace FinancialManagementApp.Dto.Transaction
 {
-    public class Transaction
+    public class ResponseTransactionDto
     {
-        [Key]
         public int Id { get; set; }
-        [ForeignKey("Account")]
         public int AccountId { get; set; }
-        public Account Account { get; set; }
         public decimal Amount { get; set; }
         public string Description { get; set; }
         public string Category { get; set; }
         public DateTime TransactionDate { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; } 
+ 
     }
+
 }

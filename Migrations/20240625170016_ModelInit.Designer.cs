@@ -4,6 +4,7 @@ using FinancialManagementApp.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FinancialManagementApp.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    partial class ApplicationDBContextModelSnapshot : ModelSnapshot
+    [Migration("20240625170016_ModelInit")]
+    partial class ModelInit
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -32,7 +35,7 @@ namespace FinancialManagementApp.Migrations
 
                     b.Property<string>("AccountName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("Balance")
                         .HasColumnType("decimal(18,2)");
@@ -46,9 +49,6 @@ namespace FinancialManagementApp.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AccountName")
-                        .IsUnique();
 
                     b.HasIndex("UserId");
 
@@ -215,13 +215,13 @@ namespace FinancialManagementApp.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "d69b8a04-11db-4147-9bc6-cb154a20419c",
+                            Id = "59fa4941-55da-46c5-b9d4-99b4bf1f529b",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "a6741bc7-4539-414d-8c29-a93a037ec1da",
+                            Id = "336ef570-9f7f-477e-9d6c-7bc673bea243",
                             Name = "User",
                             NormalizedName = "USER"
                         });
