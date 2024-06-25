@@ -170,8 +170,7 @@ namespace FinancialManagementApp.Controller
                 return StatusCode(500, new { message = "An error occurred while withdrawing from the account", error = ex.Message });
             }
         }
-
-
+                
         [HttpPost("transfer")]
         public async Task<IActionResult> TransferFunds(TransferFundsDto dto)
         {
@@ -181,20 +180,13 @@ namespace FinancialManagementApp.Controller
                 return Unauthorized(new { message = "User not found" });
             }
 
-            try
+            var result = await _accountService.TransferFundsAsync(dto, user.Id);
+            if (!result.Success)
             {
-                var success = await _accountService.TransferFundsAsync(dto, user.Id);
-                if (!success)
-                {
-                    return BadRequest(new { message = "Insufficient funds or unauthorized" });
-                }
+                return BadRequest(new { message = result.ErrorMessage });
+            }
 
-                return Ok(new { message = "Transfer successful" });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "An error occurred while transferring funds", error = ex.Message });
-            }
+            return Ok(new { message = "Transfer successful" });
         }
 
         [HttpPost("exchange")]

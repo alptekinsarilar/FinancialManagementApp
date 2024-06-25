@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using FinancialManagementApp.Data;
 using FinancialManagementApp.Dto.Transaction;
 using FinancialManagementApp.Dto.Wallet;
+using FinancialManagementApp.Exceptions;
 using FinancialManagementApp.Interfaces;
 using FinancialManagementApp.Model;
 using Microsoft.AspNetCore.Identity;
@@ -126,7 +127,7 @@ namespace FinancialManagementApp.Service
         }
 
 
-        public async Task<bool> TransferFundsAsync(TransferFundsDto dto, string userId)
+        public async Task<TransferResult> TransferFundsAsync(TransferFundsDto dto, string userId)
         {
             using (var dbContextTransaction = await _context.Database.BeginTransactionAsync())
             {
@@ -135,14 +136,24 @@ namespace FinancialManagementApp.Service
                     var senderAccount = await _context.Accounts.FindAsync(dto.SenderAccountId);
                     var recipientAccount = await _context.Accounts.FindAsync(dto.RecipientAccountId);
 
-                    if (senderAccount == null || recipientAccount == null || senderAccount.UserId != userId)
+                    if (senderAccount == null || recipientAccount == null)
                     {
-                        return false;
+                        return new TransferResult { Success = false, ErrorMessage = "Invalid account" };
+                    }
+
+                    if (senderAccount.UserId != userId)
+                    {
+                        return new TransferResult { Success = false, ErrorMessage = "Unauthorized" };
+                    }
+
+                    if (senderAccount.Currency != recipientAccount.Currency)
+                    {
+                        return new TransferResult { Success = false, ErrorMessage = "Accounts have different currencies" };
                     }
 
                     if (senderAccount.Balance < dto.Amount)
                     {
-                        return false; // Insufficient funds
+                        return new TransferResult { Success = false, ErrorMessage = "Insufficient funds" };
                     }
 
                     // Deduct amount from sender's account
@@ -180,15 +191,16 @@ namespace FinancialManagementApp.Service
                     await _context.SaveChangesAsync();
                     await dbContextTransaction.CommitAsync();
 
-                    return true;
+                    return new TransferResult { Success = true };
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                     await dbContextTransaction.RollbackAsync();
-                    throw;
+                    return new TransferResult { Success = false, ErrorMessage = ex.Message };
                 }
             }
         }
+
 
         public async Task<bool> ExchangeCurrencyAsync(int accountId, string targetCurrency, string userId)
         {
