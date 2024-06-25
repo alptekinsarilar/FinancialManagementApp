@@ -17,20 +17,15 @@ var builder = WebApplication.CreateBuilder(args);
 // Load .env file
 DotEnv.Load();
 
-// Add services to the container.
-builder.Services.AddCors(options =>
+
+
+
+builder.Services.AddControllers().AddNewtonsoftJson(options =>
 {
-    options.AddDefaultPolicy(
-        builder =>
-        {
-            builder.AllowAnyOrigin()
-                .WithOrigins("http://localhost:3000")
-                .AllowAnyMethod()
-                .AllowAnyHeader()
-                .AllowCredentials();
-        });
+    options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
 });
-builder.Services.AddControllers();
+
+
 builder.Services.AddDbContext<ApplicationDBContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -70,6 +65,10 @@ builder.Services.AddAuthentication(options =>
 
 
 // Register services
+builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<IAccountRepository, AccountRepository>();
+
+builder.Services.AddScoped<IExchangeRateService, MockExchangeRateService>();
 builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 
