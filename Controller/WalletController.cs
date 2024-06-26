@@ -79,10 +79,21 @@ namespace FinancialManagementApp.Controller
 
             try
             {
-                var success = await _accountService.DeleteAccountAsync(accountId, user.Id);
-                if (!success)
+                var result = await _accountService.DeleteAccountAsync(accountId, user.Id);
+                if (!result.Success)
                 {
-                    return NotFound(new { message = "Account not found or user not authorized" });
+                    if (result.ErrorMessage == "Account not found")
+                    {
+                        return NotFound(new { message = result.ErrorMessage });
+                    }
+                    if (result.ErrorMessage == "User not authorized")
+                    {
+                        return Unauthorized(new { message = result.ErrorMessage });
+                    }
+                    else if (result.ErrorMessage == "Account cannot be deleted because it has a non-zero balance")
+                    {
+                        return BadRequest(new { message = result.ErrorMessage });
+                    }
                 }
 
                 return NoContent();

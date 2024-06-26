@@ -51,16 +51,28 @@ namespace FinancialManagementApp.Service
         }
 
 
-        public async Task<bool> DeleteAccountAsync(int accountId, string userId)
+        public async Task<DeleteAccountResult> DeleteAccountAsync(int accountId, string userId)
         {
             var account = await _accountRepository.GetAccountByIdAsync(accountId);
-            if (account == null || account.UserId != userId)
+            if (account == null)
             {
-                return false;
+                return new DeleteAccountResult { Success = false, ErrorMessage = "Account not found" };
             }
 
-            return await _accountRepository.DeleteAccountAsync(accountId);
+            if (account.UserId != userId)
+            {
+                return new DeleteAccountResult { Success = false, ErrorMessage = "User not authorized" };
+            }
+
+            if (account.Balance != 0)
+            {
+                return new DeleteAccountResult { Success = false, ErrorMessage = "Account cannot be deleted because it has a non-zero balance" };
+            }
+
+            var success = await _accountRepository.DeleteAccountAsync(accountId);
+            return new DeleteAccountResult { Success = success };
         }
+
 
         public async Task<IEnumerable<Account>> GetAccountsByUserIdAsync(string userId)
         {
