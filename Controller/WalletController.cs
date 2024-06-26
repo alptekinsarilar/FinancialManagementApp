@@ -201,7 +201,7 @@ namespace FinancialManagementApp.Controller
         }
 
         [HttpPost("exchange")]
-        public async Task<IActionResult> ExchangeCurrency([FromQuery] int accountId, [FromBody] string targetCurrency)
+        public async Task<IActionResult> ExchangeCurrency([FromBody] ExchangeCurrencyDto dto)
         {
             var user = await GetCurrentUserAsync();
             if (user == null)
@@ -211,10 +211,10 @@ namespace FinancialManagementApp.Controller
 
             try
             {
-                var success = await _accountService.ExchangeCurrencyAsync(accountId, targetCurrency, user.Id);
-                if (!success)
+                var result = await _accountService.ExchangeCurrencyAsync(dto, user.Id);
+                if (!result.Success)
                 {
-                    return BadRequest(new { message = "Unable to exchange currency" });
+                    return BadRequest(new { message = result.ErrorMessage });
                 }
 
                 return Ok(new { message = "Currency exchanged successfully" });

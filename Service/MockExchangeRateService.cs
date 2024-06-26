@@ -11,9 +11,23 @@ namespace FinancialManagementApp.Service
     {
         public Task<decimal> GetExchangeRateAsync(Currency fromCurrency, Currency toCurrency)
         {
-            // ToDo
-            // Mock exchange rate, in real scenario this would call an external service
-            return Task.FromResult(1.1m); // Mocking an exchange rate of 1.1
+            decimal exchangeRate;
+
+            if (fromCurrency == Currency.TRY && toCurrency == Currency.USD)
+            {
+                exchangeRate = 0.033m; // TRY to USD
+            }
+            else if (fromCurrency == Currency.USD && toCurrency == Currency.TRY)
+            {
+                exchangeRate = 30m; // USD to TRY
+            }
+            else
+            {
+                throw new ArgumentException("Exchange rate not available for the specified currencies");
+            }
+
+            return Task.FromResult(exchangeRate);
         }
     }
+
 }

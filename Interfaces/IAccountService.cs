@@ -17,7 +17,7 @@ namespace FinancialManagementApp.Interfaces
         Task<bool> FundAccountAsync(FundAccountDto dto, string userId);
         Task<bool> WithdrawFromAccountAsync(WithdrawAccountDto dto, string userId);
         Task<TransferResult> TransferFundsAsync(TransferFundsDto dto, string userId);
-        Task<bool> ExchangeCurrencyAsync(int accountId, string targetCurrency, string userId);
+        Task<ExchangeResult> ExchangeCurrencyAsync(ExchangeCurrencyDto dto, string userId);
         Task<(bool, List<ResponseTransactionDto>)> GetTransactionsByAccountIdAsync(int accountId, string userId);
     }
 }

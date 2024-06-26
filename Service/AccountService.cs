@@ -227,24 +227,69 @@ namespace FinancialManagementApp.Service
         }
 
 
-        public async Task<bool> ExchangeCurrencyAsync(int accountId, string targetCurrency, string userId)
+        public async Task<ExchangeResult> ExchangeCurrencyAsync(ExchangeCurrencyDto dto, string userId)
         {
-            var account = await _accountRepository.GetAccountByIdAsync(accountId);
-            if (account == null || account.UserId != userId)
+            var senderAccount = await _accountRepository.GetAccountByIdAsync(dto.SenderAccountId);
+            var recipientAccount = await _accountRepository.GetAccountByIdAsync(dto.RecipientAccountId);
+
+            if (senderAccount == null || recipientAccount == null)
             {
-                return false;
+                return new ExchangeResult { Success = false, ErrorMessage = "One or both accounts not found" };
             }
 
-            if (!Enum.TryParse(typeof(Currency), targetCurrency, true, out var targetCurrencyEnum))
+            if (senderAccount.UserId != userId || recipientAccount.UserId != userId)
             {
-                throw new ArgumentException("Invalid currency type");
+                return new ExchangeResult { Success = false, ErrorMessage = "Unauthorized access" };
             }
 
-            var exchangeRate = await _exchangeRateService.GetExchangeRateAsync(account.Currency, (Currency)targetCurrencyEnum);
-            account.Balance *= exchangeRate;
-            account.Currency = (Currency)targetCurrencyEnum;
+            if (senderAccount.Currency == recipientAccount.Currency)
+            {
+                return new ExchangeResult { Success = false, ErrorMessage = "Accounts must have different currencies" };
+            }
 
-            return await _accountRepository.UpdateAccountAsync(account) != null;
+            if (senderAccount.Balance < dto.Amount)
+            {
+                return new ExchangeResult { Success = false, ErrorMessage = "Insufficient funds" };
+            }
+
+            var exchangeRate = await _exchangeRateService.GetExchangeRateAsync(senderAccount.Currency, recipientAccount.Currency);
+            var exchangedAmount = dto.Amount * exchangeRate;
+
+            // Deduct amount from sender's account
+            senderAccount.Balance -= dto.Amount;
+            _context.Accounts.Update(senderAccount);
+
+            // Add amount to recipient's account
+            recipientAccount.Balance += exchangedAmount;
+            _context.Accounts.Update(recipientAccount);
+
+            // Create transaction entries
+            var senderTransaction = new Transaction
+            {
+                AccountId = senderAccount.Id,
+                Amount = -dto.Amount,
+                Description = $"Exchanged {dto.Amount} {senderAccount.Currency} to {exchangedAmount} {recipientAccount.Currency}",
+                Category = "Exchange",
+                TransactionDate = DateTime.Now,
+                CreatedAt = DateTime.Now
+            };
+
+            var recipientTransaction = new Transaction
+            {
+                AccountId = recipientAccount.Id,
+                Amount = exchangedAmount,
+                Description = $"Exchanged from {dto.Amount} {senderAccount.Currency} to {exchangedAmount} {recipientAccount.Currency}",
+                Category = "Exchange",
+                TransactionDate = DateTime.Now,
+                CreatedAt = DateTime.Now
+            };
+
+            _context.Transactions.Add(senderTransaction);
+            _context.Transactions.Add(recipientTransaction);
+
+            await _context.SaveChangesAsync();
+
+            return new ExchangeResult { Success = true };
         }
 
         public async Task<(bool, List<ResponseTransactionDto>)> GetTransactionsByAccountIdAsync(int accountId, string userId)
