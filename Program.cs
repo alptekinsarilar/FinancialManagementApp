@@ -71,7 +71,7 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 
-builder.Services.AddScoped<IExchangeRateService, MockExchangeRateService>();
+builder.Services.AddSingleton<IExchangeRateService, MockExchangeRateService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 
 
